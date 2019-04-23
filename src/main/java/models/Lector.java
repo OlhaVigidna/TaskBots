@@ -14,7 +14,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @EqualsAndHashCode
-@ToString(exclude = "departments")
+@ToString(exclude = {"departments"})
 public class Lector {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

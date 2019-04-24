@@ -1,18 +1,24 @@
+import models.Degree;
 import models.Department;
 import models.Lector;
 import org.hibernate.Session;
-import org.hibernate.query.NativeQuery;
 import org.hibernate.query.Query;
 
 import javax.persistence.NoResultException;
-import java.math.BigInteger;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class Helper {
     private Session session;
     private Scanner scanner = new Scanner(System.in);
     private Scanner scannerForInt = new Scanner(System.in);
+
+    private String firstOption = "1 - show a head of the department";
+    private String secondOption = "2 - show department statistic";
+    private String thirdOption = "3 - show the average salary for department";
+    private String fourthOption = "4 - show count of employee for department";
+    private String fifthOption = "5 - global search by";
 
     public Helper(Session session) {
         this.session = session;
@@ -20,8 +26,8 @@ public class Helper {
 
     public void menu() {
         session.beginTransaction();
-        System.out.println("Choose an action: /n 1 - show a head of the department, /n 2 - show department statistic, /n " +
-                "3 - show the average salary for department, 4 - show count of employee for department, /n 5 - global search by");
+        System.out.println("Choose an action:");
+        System.out.println(firstOption + "\n" + secondOption + "\n" + thirdOption + "\n" + fourthOption + "\n" + fifthOption);
         int firstChoose = scannerForInt.nextInt();
 
         switch (firstChoose) {
@@ -78,13 +84,13 @@ public class Helper {
         Department department = findDepartment(departmentName);
         List<Lector> lectors = department.getLectors();
         int averageSalary = salaryAverage(lectors);
-        System.out.println("The average salary of " + departmentName + " is" + averageSalary);
+        System.out.println("The average salary of " + departmentName + " is " + averageSalary);
 
     }
 
     private void showCountOfEmployeeForDepartment() {
-        String depertmentName = readNameFromConsole();
-        Department department = findDepartment(depertmentName);
+        String departmentName = readNameFromConsole();
+        Department department = findDepartment(departmentName);
         int size = department.getLectors().size();
         System.out.println(size);
     }
@@ -98,45 +104,11 @@ public class Helper {
     }
 
     private void printStatistic(List<Lector> lectors) {
-        String s = "SELECT count(*), l.lectorDegree FROM lector as l GROUP BY l.lectorDegree";
-        NativeQuery sqlQuery = session.createSQLQuery(s);
-        List<Object[]> resultList = sqlQuery.getResultList();
-        for (Object[] objects : resultList) {
-            BigInteger first = (BigInteger) objects[0];
-            System.out.println(first);
-            System.out.println(objects[0] + " " + objects[1]);
-        }
-    }
-
-//    private void  printStatistic(List<Lector> lectors){
-//        List<Object> assistants = lectors.stream().filter(l -> l.getLectorDegree().equals("ASSISTANT")).collect(Collectors.toList());
-//        List<Object> professors = lectors.stream().filter(l -> l.getLectorDegree().equals("PROFESSOR")).collect(Collectors.toList());
-//        List<Object> associateProfessors = lectors.stream().filter(l -> l.getLectorDegree().equals("ASSOCIATE_PROFESSOR")).collect(Collectors.toList());
-////        int professorsCount = 0;
-////        int assistantCount = 0;
-////        int associateProfessorsCount = 0;
-////        for (Lector lector : lectors) {
-////            switch (lector.getLectorDegree()){
-////                case ASSISTANT:{
-////                    assistantCount++;
-////                    break;
-////                }
-////                case PROFESSOR:{
-////                    professorsCount++;
-////                    break;
-////                }
-////                case ASSOCIATE_PROFESSOR:{
-////                    associateProfessorsCount++;
-////                    break;
-////                }
-////            }
-////        }
-//        System.out.println("Assistants - " + assistants.size() + "/n Professors - " + professors.size() +
-//                "/n Associate professors - " + associateProfessors.size());
-//    }
-
-    private void printStatisticOfDepartment(List<Lector> lectors) {
-
+        List<Object> assistants = lectors.stream().filter(l -> l.getLectorDegree().equals(Degree.ASSISTANT)).collect(Collectors.toList());
+        List<Object> professors = lectors.stream().filter(l -> l.getLectorDegree().equals(Degree.PROFESSOR)).collect(Collectors.toList());
+        List<Object> associateProfessors = lectors.stream().filter(l -> l.getLectorDegree().equals(Degree.ASSOCIATE_PROFESSOR)).collect(Collectors.toList());
+        System.out.println("Assistants - " + assistants.size() + "\nProfessors - " + professors.size() +
+                "\nAssociate professors - " + associateProfessors.size());
     }
 
     private void globalSearchBy() {

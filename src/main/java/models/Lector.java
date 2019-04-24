@@ -24,7 +24,7 @@ public class Lector {
     int lectorSalary;
     Degree lectorDegree;
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "lectors")
-    List<Department> departments = new ArrayList<Department>();
+    List<Department> departments = new ArrayList<>();
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "headOfDepartment")
     Department headOfDepartment;
 }

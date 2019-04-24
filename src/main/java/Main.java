@@ -1,4 +1,3 @@
-import models.Degree;
 import models.Department;
 import models.Lector;
 import org.hibernate.Session;

@@ -2,12 +2,13 @@ import models.Degree;
 import models.Department;
 import models.Lector;
 import org.hibernate.Session;
+import org.hibernate.query.NativeQuery;
 import org.hibernate.query.Query;
 
 import javax.persistence.NoResultException;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Scanner;
-import java.util.stream.Collectors;
 
 public class Helper {
     private Session session;
@@ -74,18 +75,21 @@ public class Helper {
 
     private void showStatisticOfDepartment() {
         String departName = readNameFromConsole();
-        Department department = findDepartment(departName);
-        List<Lector> lectors = department.getLectors();
-        printStatistic(lectors);
+        List<Object[]> objects = departmentStstisticQuery(departName);
+        for (Object[] object : objects) {
+            BigInteger count = (BigInteger) object[0];
+            Integer degree = (Integer) object[1];
+            Degree localDegree = degree.equals(0) ? Degree.ASSISTANT : degree.equals(1) ? Degree.ASSOCIATE_PROFESSOR : Degree.PROFESSOR;
+            System.out.println(localDegree + " - " + count);
+        }
+
     }
 
     private void showAverageSalaryForDepartment() {
         String departmentName = readNameFromConsole();
-        Department department = findDepartment(departmentName);
-        List<Lector> lectors = department.getLectors();
-        int averageSalary = salaryAverage(lectors);
-        System.out.println("The average salary of " + departmentName + " is " + averageSalary);
+        Object[] objects = salaryAverage(departmentName);
 
+        System.out.println("The average salary of " + objects[1] + " is " + objects[0]);
     }
 
     private void showCountOfEmployeeForDepartment() {
@@ -95,21 +99,24 @@ public class Helper {
         System.out.println(size);
     }
 
-    private int salaryAverage(List<Lector> lectors) {
-        int salarySum = 0;
-        for (Lector lector : lectors) {
-            salarySum = salarySum + lector.getLectorSalary();
-        }
-        return salarySum / lectors.size();
+    private Object[] salaryAverage(String nameOfDepartment) {
+        NativeQuery sqlQuery = session.createSQLQuery("SELECT avg(lectorSalary), d.departmentName FROM lector as " +
+                "l JOIN department_lector as dl ON l.lectorId = dl.lectors_lectorId JOIN" +
+                "  department as d ON dl.departments_departmentId = d.departmentId WHERE d.departmentName=:x");
+        sqlQuery.setParameter("x", nameOfDepartment);
+        List<Object[]> resultList = sqlQuery.getResultList();
+        return resultList.get(0);
     }
 
-    private void printStatistic(List<Lector> lectors) {
-        List<Object> assistants = lectors.stream().filter(l -> l.getLectorDegree().equals(Degree.ASSISTANT)).collect(Collectors.toList());
-        List<Object> professors = lectors.stream().filter(l -> l.getLectorDegree().equals(Degree.PROFESSOR)).collect(Collectors.toList());
-        List<Object> associateProfessors = lectors.stream().filter(l -> l.getLectorDegree().equals(Degree.ASSOCIATE_PROFESSOR)).collect(Collectors.toList());
-        System.out.println("Assistants - " + assistants.size() + "\nProfessors - " + professors.size() +
-                "\nAssociate professors - " + associateProfessors.size());
+    private List<Object[]> departmentStstisticQuery(String departmentName) {
+        NativeQuery sqlQuery = session.createSQLQuery("SELECT count(*), l.lectorDegree FROM lector as l JOIN " +
+                "department_lector as dl ON l.lectorId = dl.lectors_lectorId JOIN department as d ON" +
+                " dl.departments_departmentId = d.departmentId WHERE d.departmentName=:x GROUP BY l.lectorDegree");
+        sqlQuery.setParameter("x", departmentName);
+        List<Object[]> resultList = sqlQuery.getResultList();
+        return resultList;
     }
+
 
     private void globalSearchBy() {
         System.out.println("enter pattern");

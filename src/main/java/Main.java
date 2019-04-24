@@ -20,6 +20,8 @@ public class Main {
         helper.menu();
 
 //        session.beginTransaction();
+
+
 //
 //        Department department = new Department();
 //        Lector lector = new Lector();

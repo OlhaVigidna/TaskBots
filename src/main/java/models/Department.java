@@ -22,6 +22,6 @@ public class Department {
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     Lector headOfDepartment;
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    List<Lector> lectors = new ArrayList<Lector>();
+    List<Lector> lectors = new ArrayList<>();
 
 }
